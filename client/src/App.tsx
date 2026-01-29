@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 // В реальном приложении лучше вынести в .env
-const API_URL = "https://mumbai-psychological-yeast-exist.trycloudflare.com";
+const API_URL = "https://tgwine.onrender.com";
 
 // --- Types ---
 interface Drink { name: string; type: string; country: string; notes: string[] }
