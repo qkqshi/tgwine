@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import axios from "axios";
 import { 
   Wine, Utensils, Activity, HeartPulse, 
-  Camera, ChevronRight, ArrowLeft, Loader2, Upload 
+  Camera, ChevronRight, ArrowLeft, Loader2
 } from "lucide-react";
 
 // В реальном приложении лучше вынести в .env
