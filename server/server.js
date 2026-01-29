@@ -9,7 +9,10 @@ dotenv.config();
 const app = express();
 const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
-app.use(cors());
+app.use(cors({
+   origin: "https://tgwine.vercel.app/", 
+   credentials: true
+}));
 app.use(express.json());
 
 // ⚙️ КОНФИГУРАЦИЯ МОДЕЛЕЙ
