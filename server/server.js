@@ -223,6 +223,9 @@ app.post("/api/sommelier/hangover-tips", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("🍷 Sommelier API is working!");
+});
 app.listen(process.env.PORT || 3001, () => {
   console.log(`🍷 Sommelier API ready on port ${process.env.PORT || 3001}`);
 });
