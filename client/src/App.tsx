@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { 
   Wine, Utensils, Activity, HeartPulse, 
@@ -82,6 +82,7 @@ export default function App() {
 
   const [s2Form, setS2Form] = useState({ type: "", country: "", notes: "" });
   const [s2Recs, setS2Recs] = useState<any[]>([]);
+  const notesInputRef = useRef<HTMLInputElement>(null);
 
   const [s3Data, setS3Data] = useState<{dish: string, wines: WineRec[]} | null>(null);
   
@@ -148,9 +149,16 @@ export default function App() {
   };
 
   const handleStep2 = async () => {
+    const notes = notesInputRef.current?.value?.trim() ?? s2Form.notes;
+    const payload = { ...s2Form, notes };
+    if (!payload.type) return;
+    if (!notes) {
+      setError("Опишите ноты (например: сладкое, фруктовое)");
+      return;
+    }
     setLoading(true); setError(null);
     try {
-      const res = await axios.post(`${API_URL}/api/sommelier/personalized-drinks`, s2Form);
+      const res = await axios.post(`${API_URL}/api/sommelier/personalized-drinks`, payload);
       setS2Recs(res.data.recommendations);
     } catch (e) { handleError(e); }
     finally { setLoading(false); }
@@ -162,7 +170,14 @@ export default function App() {
     setLoading(true); setError(null);
     try {
       const res = await uploadFile("dish-to-wine", file);
-      setS3Data(res.data);
+      const data = res.data;
+      if (data?.recognized === false) {
+        setError(data.message || "Блюдо не распознано. Попробуйте ещё раз.");
+        setS3Data(null);
+      } else {
+        setError(null);
+        setS3Data(data);
+      }
     } catch (e) { handleError(e); }
     finally { setLoading(false); }
   };
@@ -366,7 +381,7 @@ export default function App() {
         {view === "step2" && (
           <>
             {s2Recs.length === 0 ? (
-              <Card>
+              <Card key="step2-form">
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--color-apple-text)" }}>Что хотите?</label>
@@ -374,7 +389,7 @@ export default function App() {
                       className="w-full p-3 rounded-[var(--radius-apple)] border-none text-[var(--color-apple-text)]"
                       style={{ background: "var(--color-apple-fill)" }}
                       value={s2Form.type}
-                      onChange={(e) => setS2Form({ ...s2Form, type: e.target.value })}
+                      onChange={(e) => { setS2Form((prev) => ({ ...prev, type: e.target.value })); setError(null); }}
                     >
                       <option value="">Не выбрано</option>
                       <option value="Вино красное">Красное вино</option>
@@ -386,14 +401,16 @@ export default function App() {
                   <div>
                     <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--color-apple-text)" }}>Какие ноты?</label>
                     <input
+                      ref={notesInputRef}
+                      type="text"
                       className="w-full p-3 rounded-[var(--radius-apple)] border-none text-[var(--color-apple-text)] placeholder:opacity-70"
                       style={{ background: "var(--color-apple-fill)" }}
                       placeholder="Сладкое, фруктовое, дымное..."
-                      value={s2Form.notes}
-                      onChange={(e) => setS2Form({ ...s2Form, notes: e.target.value })}
+                      defaultValue={s2Form.notes}
+                      onFocus={() => setError(null)}
                     />
                   </div>
-                  <Button loading={loading} onClick={handleStep2} disabled={!s2Form.type || !s2Form.notes}>Подобрать</Button>
+                  <Button loading={loading} onClick={handleStep2} disabled={!s2Form.type}>Подобрать</Button>
                 </div>
               </Card>
             ) : (
@@ -412,7 +429,7 @@ export default function App() {
                     </div>
                   </Card>
                 ))}
-                <Button loading={loading} variant="secondary" onClick={() => setS2Recs([])}>Искать снова</Button>
+                <Button loading={loading} variant="secondary" onClick={() => { setS2Recs([]); notesInputRef.current && (notesInputRef.current.value = ""); setS2Form((prev) => ({ ...prev, notes: "" })); }}>Искать снова</Button>
               </div>
             )}
           </>

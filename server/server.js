@@ -153,14 +153,15 @@ app.post("/api/sommelier/dish-to-wine", upload.single("image"), async (req, res)
     const base64 = req.file.buffer.toString("base64");
     const mime = req.file.mimetype || "image/jpeg";
 
-    const prompt = `Определи блюдо и посоветуй 2 вина к нему.
-    Ответь ТОЛЬКО JSON:
-    {
-      "dish":"Название блюда",
-      "wines":[
-        {"name":"Вино 1","type":"Красное/Белое","why":"Почему подходит"}
-      ]
-    }`;
+    const prompt = `По фото определи блюдо. Ничего не выдумывай.
+    Если по фото НЕВОЗМОЖНО уверенно определить блюдо (размыто, не еда, не видно и т.п.) — ответь ТОЛЬКО JSON:
+    {"recognized": false, "message": "Блюдо не распознано"}
+    Если блюдо уверенно распознаётся — ответь ТОЛЬКО JSON:
+    {"recognized": true, "dish": "Название блюда", "wines": [
+      {"name": "Вино 1", "type": "Красное/Белое", "why": "Почему подходит"},
+      {"name": "Вино 2", "type": "...", "why": "..."}
+    ]}
+    Должно быть ровно 2 вина. Не придумывай блюдо, если не уверен.`;
 
     const messages = [
       {
