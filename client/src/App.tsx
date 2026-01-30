@@ -44,10 +44,7 @@ export default function App() {
   useEffect(() => {
     if (tg) {
       tg.ready();
-      tg.expand(); // Раскрыть на весь экран
-      // Настройка цветов под тему пользователя
-      document.body.style.backgroundColor = tg.themeParams.bg_color || "#f8fafc";
-      document.body.style.color = tg.themeParams.text_color || "#0f172a";
+      tg.expand();
     }
   }, []);
 
@@ -138,32 +135,35 @@ export default function App() {
     finally { setLoading(false); }
   };
 
-  // --- UI Components ---
+  // --- UI Components (Apple-style) ---
   const Card = ({ children, className = "" }: any) => (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-5 ${className}`}>
+    <div className={`apple-card p-5 ${className}`}>
       {children}
     </div>
   );
 
   const Button = ({ onClick, disabled, children, variant = "primary" }: any) => {
-    const base = "w-full py-3.5 rounded-xl font-medium transition-all active:scale-95 flex items-center justify-center gap-2";
-    const styles = {
-      primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300",
-      secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-      outline: "border-2 border-slate-200 text-slate-700 hover:border-blue-500",
-    };
+    const isPrimary = variant === "primary";
     return (
-      <button onClick={onClick} disabled={disabled || loading} className={`${base} ${styles[variant as keyof typeof styles]}`}>
-        {loading ? <Loader2 className="animate-spin" size={20}/> : children}
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled || loading}
+        className={`w-full flex items-center justify-center gap-2 ${isPrimary ? "apple-btn-primary" : "apple-btn-secondary"}`}
+      >
+        {loading ? <Loader2 className="animate-spin" size={20} /> : children}
       </button>
     );
   };
 
   const FileUploader = ({ onChange, label }: any) => (
-    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer bg-slate-50 hover:bg-blue-50 transition-colors">
-      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-        <Camera className="w-8 h-8 text-slate-400 mb-2" />
-        <p className="text-sm text-slate-500">{label}</p>
+    <label
+      className="flex flex-col items-center justify-center w-full min-h-[140px] rounded-[var(--radius-apple-lg)] cursor-pointer transition-colors border-2 border-dashed"
+      style={{ borderColor: "var(--color-apple-separator-strong)", background: "var(--color-apple-fill)" }}
+    >
+      <div className="flex flex-col items-center justify-center py-6 px-4">
+        <Camera size={28} style={{ color: "var(--color-apple-text-tertiary)" }} className="mb-2" />
+        <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>{label}</p>
       </div>
       <input type="file" className="hidden" accept="image/*" onChange={onChange} />
     </label>
@@ -173,23 +173,30 @@ export default function App() {
 
   if (view === "welcome") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center space-y-6 animate-in fade-in">
-        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-4xl">🍷</div>
-        <h1 className="text-2xl font-bold text-slate-800">AI Сомелье</h1>
-        <p className="text-slate-500">
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 py-10 text-center animate-apple-in">
+        <div
+          className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-6"
+          style={{ background: "var(--color-apple-fill)" }}
+        >
+          🍷
+        </div>
+        <h1 className="mb-2">AI Сомелье</h1>
+        <p className="text-base mb-8 max-w-[280px]" style={{ color: "var(--color-apple-text-secondary)" }}>
           Ваш персональный гид в мире напитков. Подбор вина, рецепты коктейлей и восстановление.
         </p>
-        <Button onClick={() => setView("disclaimer")}>Начать</Button>
+        <div className="w-full max-w-[280px]">
+          <Button onClick={() => setView("disclaimer")}>Начать</Button>
+        </div>
       </div>
     );
   }
 
   if (view === "disclaimer") {
     return (
-      <div className="flex flex-col justify-center min-h-screen p-6 space-y-6">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-slate-800">Вам есть 18 лет?</h2>
-          <p className="text-slate-500 text-sm">Мы обязаны спросить. Контент 18+</p>
+      <div className="flex flex-col justify-center min-h-screen px-6 py-10 animate-apple-in">
+        <div className="text-center mb-8">
+          <h2 className="mb-2">Вам есть 18 лет?</h2>
+          <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>Мы обязаны спросить. Контент 18+</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Button variant="secondary" onClick={() => alert("Доступ запрещен")}>Нет</Button>
@@ -201,33 +208,38 @@ export default function App() {
 
   if (view === "menu") {
     const menuItems = [
-      { id: "step1", title: "Фото этикетки", desc: "Подбор блюд к напитку", icon: <Camera size={20}/>, color: "bg-blue-50 text-blue-600" },
-      { id: "step2", title: "Выбор напитка", desc: "Под ваш вкус", icon: <Wine size={20}/>, color: "bg-purple-50 text-purple-600" },
-      { id: "step3", title: "Вино к еде", desc: "По фото блюда", icon: <Utensils size={20}/>, color: "bg-orange-50 text-orange-600" },
-      { id: "step4", title: "Тренировка", desc: "После вечеринки", icon: <Activity size={20}/>, color: "bg-green-50 text-green-600" },
-      { id: "step5", title: "Анти-похмелье", desc: "Как прийти в себя", icon: <HeartPulse size={20}/>, color: "bg-red-50 text-red-600" },
+      { id: "step1", title: "Фото этикетки", desc: "Подбор блюд к напитку", icon: <Camera size={22} />, color: "#0071e3" },
+      { id: "step2", title: "Выбор напитка", desc: "Под ваш вкус", icon: <Wine size={22} />, color: "#af52de" },
+      { id: "step3", title: "Вино к еде", desc: "По фото блюда", icon: <Utensils size={22} />, color: "#ff9500" },
+      { id: "step4", title: "Тренировка", desc: "После вечеринки", icon: <Activity size={22} />, color: "#34c759" },
+      { id: "step5", title: "Анти-похмелье", desc: "Как прийти в себя", icon: <HeartPulse size={22} />, color: "#ff3b30" },
     ];
 
     return (
-      <div className="p-4 space-y-4 pb-10">
-        <h2 className="text-xl font-bold text-slate-800 mb-4">Меню</h2>
-        <div className="grid gap-3">
+      <div className="px-4 py-6 pb-12 animate-apple-in">
+        <h2 className="mb-6">Меню</h2>
+        <div className="flex flex-col gap-3">
           {menuItems.map((item) => (
-            <button 
-              key={item.id} 
+            <button
+              key={item.id}
+              type="button"
               onClick={() => {
-                 // Reset states if needed
-                 setS1Data(null); setS2Recs([]); setS3Data(null); setS4Data(null); setS5Data(null);
-                 setView(item.id as ViewState);
+                setS1Data(null); setS2Recs([]); setS3Data(null); setS4Data(null); setS5Data(null);
+                setView(item.id as ViewState);
               }}
-              className="flex items-center p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:bg-slate-50 transition-all text-left"
+              className="apple-list-row text-left"
             >
-              <div className={`p-3 rounded-xl ${item.color} mr-4`}>{item.icon}</div>
-              <div>
-                <h3 className="font-semibold text-slate-800">{item.title}</h3>
-                <p className="text-xs text-slate-500">{item.desc}</p>
+              <div
+                className="w-10 h-10 rounded-[var(--radius-apple)] flex items-center justify-center shrink-0 mr-4"
+                style={{ background: `${item.color}18`, color: item.color }}
+              >
+                {item.icon}
               </div>
-              <ChevronRight className="ml-auto text-slate-300" size={20} />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-[var(--color-apple-text)]">{item.title}</h3>
+                <p className="text-xs mt-0.5" style={{ color: "var(--color-apple-text-secondary)" }}>{item.desc}</p>
+              </div>
+              <ChevronRight size={20} style={{ color: "var(--color-apple-text-tertiary)" }} className="shrink-0" />
             </button>
           ))}
         </div>
@@ -237,94 +249,116 @@ export default function App() {
 
   // --- Feature Views ---
 
+  const featureTitles: Record<string, string> = {
+    step1: "Этикетка → Блюда",
+    step2: "Подбор напитка",
+    step3: "Блюдо → Вино",
+    step4: "Детокс-тренировка",
+    step5: "Анти-похмелье",
+  };
+
   return (
-    <div className="p-4 min-h-screen bg-slate-50 pb-12">
-      <div className="flex items-center gap-2 mb-6">
-        <button onClick={() => setView("menu")} className="p-2 -ml-2 text-slate-400 hover:text-slate-600">
+    <div className="min-h-screen pb-12 animate-apple-in" style={{ background: "var(--color-apple-bg)" }}>
+      <header className="flex items-center gap-3 px-4 py-4 sticky top-0 z-10" style={{ background: "var(--color-apple-bg)", borderBottom: "1px solid var(--color-apple-separator)" }}>
+        <button
+          type="button"
+          onClick={() => setView("menu")}
+          className="p-2 -ml-1 rounded-[var(--radius-apple)] flex items-center justify-center"
+          style={{ color: "var(--color-apple-blue)" }}
+          aria-label="Назад"
+        >
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-lg font-bold text-slate-800">
-          {view === "step1" && "Этикетка → Блюда"}
-          {view === "step2" && "Подбор напитка"}
-          {view === "step3" && "Блюдо → Вино"}
-          {view === "step4" && "Детокс-тренировка"}
-          {view === "step5" && "Анти-похмелье"}
+        <h2 className="text-lg font-semibold flex-1" style={{ color: "var(--color-apple-text)" }}>
+          {featureTitles[view]}
         </h2>
-      </div>
+      </header>
 
-      <div className="space-y-6">
-        {/* Ошибки */}
+      <div className="px-4 pt-4 space-y-5">
         {error && (
-          <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+          <div
+            className="p-4 rounded-[var(--radius-apple)] text-sm"
+            style={{ background: "rgba(255, 59, 48, 0.12)", color: "var(--color-apple-red)", border: "1px solid rgba(255, 59, 48, 0.2)" }}
+          >
             {error}
           </div>
         )}
 
-        {/* STEP 1 */}
         {view === "step1" && (
           <>
             {!s1Data ? (
               <Card>
-                <p className="text-sm text-slate-600 mb-4">Сфотографируйте этикетку бутылки, чтобы узнать, с чем это пить.</p>
+                <p className="text-sm mb-4" style={{ color: "var(--color-apple-text-secondary)" }}>
+                  Сфотографируйте этикетку бутылки, чтобы узнать, с чем это пить.
+                </p>
                 <FileUploader onChange={handleStep1} label="Загрузить фото этикетки" />
               </Card>
             ) : (
               <div className="space-y-4">
-                <Card className="bg-gradient-to-br from-blue-50 to-white">
-                  <h3 className="text-xl font-bold text-slate-800 mb-1">{s1Data.drink.name}</h3>
-                  <div className="flex gap-2 text-xs text-slate-500 uppercase tracking-wider mb-3">
-                    <span className="bg-white px-2 py-1 rounded shadow-sm">{s1Data.drink.type}</span>
-                    <span className="bg-white px-2 py-1 rounded shadow-sm">{s1Data.drink.country}</span>
+                <Card style={{ background: "linear-gradient(135deg, rgba(0,113,227,0.08) 0%, var(--color-apple-bg-elevated) 100%)" }}>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--color-apple-text)" }}>{s1Data.drink.name}</h3>
+                  <div className="flex gap-2 text-xs uppercase tracking-wider mb-3">
+                    <span className="px-2.5 py-1 rounded-[var(--radius-apple-sm)]" style={{ background: "var(--color-apple-fill)", color: "var(--color-apple-text-secondary)" }}>{s1Data.drink.type}</span>
+                    <span className="px-2.5 py-1 rounded-[var(--radius-apple-sm)]" style={{ background: "var(--color-apple-fill)", color: "var(--color-apple-text-secondary)" }}>{s1Data.drink.country}</span>
                   </div>
-                  <p className="text-sm text-slate-600 italic">"{s1Data.drink.notes.join(", ")}"</p>
+                  <p className="text-sm italic" style={{ color: "var(--color-apple-text-secondary)" }}>«{s1Data.drink.notes.join(", ")}»</p>
                 </Card>
 
-                <h3 className="font-semibold text-slate-700">Идеальные пары:</h3>
-                {s1Data.dishes.map((dish, i) => (
-                  <label key={i} className={`block p-4 border rounded-xl cursor-pointer transition-all ${s1SelectedDish === dish.name ? "border-blue-500 bg-blue-50" : "border-slate-100 bg-white"}`}>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="radio" 
-                        name="dish" 
-                        value={dish.name} 
-                        onChange={(e) => setS1SelectedDish(e.target.value)}
-                        className="w-4 h-4 text-blue-600"
-                      />
-                      <div>
-                        <div className="font-medium text-slate-800">{dish.name}</div>
-                        {dish.desc && <div className="text-xs text-slate-500">{dish.desc}</div>}
+                <h3 className="font-semibold text-sm" style={{ color: "var(--color-apple-text)" }}>Идеальные пары</h3>
+                <div className="flex flex-col gap-2">
+                  {s1Data.dishes.map((dish, i) => (
+                    <label
+                      key={i}
+                      className={`block p-4 rounded-[var(--radius-apple)] cursor-pointer transition-all border ${s1SelectedDish === dish.name ? "border-[var(--color-apple-blue)]" : ""}`}
+                      style={{
+                        background: s1SelectedDish === dish.name ? "rgba(0,113,227,0.08)" : "var(--color-apple-bg-elevated)",
+                        borderColor: s1SelectedDish === dish.name ? "var(--color-apple-blue)" : "var(--color-apple-separator)",
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="dish"
+                          value={dish.name}
+                          onChange={(e) => setS1SelectedDish(e.target.value)}
+                          className="w-4 h-4 accent-[var(--color-apple-blue)]"
+                        />
+                        <div>
+                          <div className="font-medium" style={{ color: "var(--color-apple-text)" }}>{dish.name}</div>
+                          {dish.desc && <div className="text-xs mt-0.5" style={{ color: "var(--color-apple-text-secondary)" }}>{dish.desc}</div>}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
+                </div>
 
                 {s1SelectedDish && !s1Recipe && (
                   <Button onClick={handleGetRecipe}>Получить рецепт</Button>
                 )}
 
                 {s1Recipe && (
-                   <Card className="bg-yellow-50 border-yellow-100">
-                     <h4 className="font-bold text-yellow-800 mb-2">📖 Рецепт: {s1SelectedDish}</h4>
-                     <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{s1Recipe}</p>
-                   </Card>
+                  <Card style={{ background: "rgba(255,149,0,0.08)", borderColor: "rgba(255,149,0,0.25)" }}>
+                    <h4 className="font-semibold mb-2" style={{ color: "var(--color-apple-text)" }}>📖 Рецепт: {s1SelectedDish}</h4>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: "var(--color-apple-text-secondary)" }}>{s1Recipe}</p>
+                  </Card>
                 )}
               </div>
             )}
           </>
         )}
 
-        {/* STEP 2 */}
         {view === "step2" && (
           <>
             {s2Recs.length === 0 ? (
               <Card>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Что хотите?</label>
-                    <select 
-                      className="w-full mt-1 p-3 bg-slate-50 border-none rounded-xl"
+                    <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--color-apple-text)" }}>Что хотите?</label>
+                    <select
+                      className="w-full p-3 rounded-[var(--radius-apple)] border-none text-[var(--color-apple-text)]"
+                      style={{ background: "var(--color-apple-fill)" }}
                       value={s2Form.type}
-                      onChange={(e) => setS2Form({...s2Form, type: e.target.value})}
+                      onChange={(e) => setS2Form({ ...s2Form, type: e.target.value })}
                     >
                       <option value="">Не выбрано</option>
                       <option value="Вино красное">Красное вино</option>
@@ -334,12 +368,13 @@ export default function App() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Какие ноты?</label>
-                    <input 
-                      className="w-full mt-1 p-3 bg-slate-50 border-none rounded-xl"
+                    <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--color-apple-text)" }}>Какие ноты?</label>
+                    <input
+                      className="w-full p-3 rounded-[var(--radius-apple)] border-none text-[var(--color-apple-text)] placeholder:opacity-70"
+                      style={{ background: "var(--color-apple-fill)" }}
                       placeholder="Сладкое, фруктовое, дымное..."
                       value={s2Form.notes}
-                      onChange={(e) => setS2Form({...s2Form, notes: e.target.value})}
+                      onChange={(e) => setS2Form({ ...s2Form, notes: e.target.value })}
                     />
                   </div>
                   <Button onClick={handleStep2} disabled={!s2Form.type || !s2Form.notes}>Подобрать</Button>
@@ -347,44 +382,50 @@ export default function App() {
               </Card>
             ) : (
               <div className="space-y-3">
-                 {s2Recs.map((rec, i) => (
-                   <Card key={i}>
-                     <div className="flex justify-between items-start">
-                       <h3 className="font-bold text-slate-800">{rec.name}</h3>
-                       <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">{rec.priceUSD}</span>
-                     </div>
-                     <p className="text-xs text-slate-500 mb-2">{rec.region}</p>
-                     <div className="flex flex-wrap gap-1">
-                       {rec.notes?.map((n: string) => <span key={n} className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">{n}</span>)}
-                     </div>
-                   </Card>
-                 ))}
-                 <Button variant="secondary" onClick={() => setS2Recs([])}>Искать снова</Button>
+                {s2Recs.map((rec, i) => (
+                  <Card key={i}>
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-semibold" style={{ color: "var(--color-apple-text)" }}>{rec.name}</h3>
+                      <span className="text-xs font-semibold shrink-0 px-2 py-1 rounded-[var(--radius-apple-sm)]" style={{ background: "rgba(52,199,89,0.2)", color: "var(--color-apple-green)" }}>{rec.priceUSD}</span>
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: "var(--color-apple-text-secondary)" }}>{rec.region}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {rec.notes?.map((n: string) => (
+                        <span key={n} className="text-xs px-2 py-1 rounded-[var(--radius-apple-sm)]" style={{ background: "var(--color-apple-fill)", color: "var(--color-apple-text-secondary)" }}>{n}</span>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+                <Button variant="secondary" onClick={() => setS2Recs([])}>Искать снова</Button>
               </div>
             )}
           </>
         )}
 
-        {/* STEP 3 */}
         {view === "step3" && (
           <>
-             {!s3Data ? (
+            {!s3Data ? (
               <Card>
-                <p className="text-sm text-slate-600 mb-4">Фотографируйте еду, AI подберет идеальное вино.</p>
+                <p className="text-sm mb-4" style={{ color: "var(--color-apple-text-secondary)" }}>
+                  Фотографируйте еду — AI подберёт идеальное вино.
+                </p>
                 <FileUploader onChange={handleStep3} label="Сделать фото блюда" />
               </Card>
             ) : (
               <div className="space-y-4">
                 <div className="text-center">
-                  <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                  <span
+                    className="inline-block px-4 py-2 rounded-full text-sm font-medium"
+                    style={{ background: "rgba(255,149,0,0.15)", color: "var(--color-apple-orange)" }}
+                  >
                     🍽️ {s3Data.dish}
                   </span>
                 </div>
                 {s3Data.wines.map((wine, i) => (
-                  <Card key={i} className="border-l-4 border-l-purple-500">
-                    <h3 className="font-bold text-slate-800">{wine.name}</h3>
-                    <p className="text-xs text-purple-600 font-medium mb-2">{wine.type}</p>
-                    <p className="text-sm text-slate-600">{wine.why}</p>
+                  <Card key={i} className="border-l-4" style={{ borderLeftColor: "var(--color-apple-purple)" }}>
+                    <h3 className="font-semibold" style={{ color: "var(--color-apple-text)" }}>{wine.name}</h3>
+                    <p className="text-xs font-medium mb-2" style={{ color: "var(--color-apple-purple)" }}>{wine.type}</p>
+                    <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>{wine.why}</p>
                   </Card>
                 ))}
                 <Button variant="secondary" onClick={() => setS3Data(null)}>Другое фото</Button>
@@ -393,78 +434,81 @@ export default function App() {
           </>
         )}
 
-        {/* STEP 4 */}
         {view === "step4" && (
-           <>
-             {!s4Data ? (
-               <Card>
-                 <p className="text-sm text-slate-600 mb-4">Насколько тяжело состояние?</p>
-                 <div className="space-y-2 mb-4">
-                   {[
-                     {id: "light", t: "🙂 Легкое", d: "Просто освежиться"},
-                     {id: "medium", t: "😐 Среднее", d: "Нужно подвигаться"},
-                     {id: "advanced", t: "🤢 Тяжелое", d: "Только подышать"}
-                   ].map((l) => (
-                     <button
-                       key={l.id}
-                       onClick={() => setS4Level(l.id)}
-                       className={`w-full p-3 rounded-xl border text-left transition-all ${s4Level === l.id ? "border-green-500 bg-green-50" : "border-slate-100"}`}
-                     >
-                       <div className="font-medium text-slate-800">{l.t}</div>
-                       <div className="text-xs text-slate-500">{l.d}</div>
-                     </button>
-                   ))}
-                 </div>
-                 <Button onClick={handleStep4}>Создать тренировку</Button>
-               </Card>
-             ) : (
-               <div className="space-y-4">
-                 <div className="flex justify-between items-center text-slate-800 font-bold px-2">
-                   <span>Уровень: {s4Data.level}</span>
-                   <span>⏱ {s4Data.duration}</span>
-                 </div>
-                 <div className="space-y-2">
-                   {s4Data.exercises.map((ex, i) => (
-                     <Card key={i} className="py-3">
-                       <div className="flex justify-between">
-                         <span className="font-medium text-slate-800">{ex.name}</span>
-                         <span className="font-bold text-blue-600">{ex.reps}</span>
-                       </div>
-                       <p className="text-xs text-slate-500 mt-1">{ex.notes}</p>
-                     </Card>
-                   ))}
-                 </div>
-                 <Button variant="secondary" onClick={() => setS4Data(null)}>Сменить уровень</Button>
-               </div>
-             )}
-           </>
+          <>
+            {!s4Data ? (
+              <Card>
+                <p className="text-sm mb-4" style={{ color: "var(--color-apple-text-secondary)" }}>Насколько тяжело состояние?</p>
+                <div className="space-y-2 mb-4">
+                  {[
+                    { id: "light", t: "🙂 Легкое", d: "Просто освежиться" },
+                    { id: "medium", t: "😐 Среднее", d: "Нужно подвигаться" },
+                    { id: "advanced", t: "🤢 Тяжелое", d: "Только подышать" },
+                  ].map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setS4Level(l.id)}
+                      className="w-full p-4 rounded-[var(--radius-apple)] border text-left transition-all"
+                      style={{
+                        borderColor: s4Level === l.id ? "var(--color-apple-green)" : "var(--color-apple-separator)",
+                        background: s4Level === l.id ? "rgba(52,199,89,0.1)" : "var(--color-apple-bg-elevated)",
+                      }}
+                    >
+                      <div className="font-medium" style={{ color: "var(--color-apple-text)" }}>{l.t}</div>
+                      <div className="text-xs mt-0.5" style={{ color: "var(--color-apple-text-secondary)" }}>{l.d}</div>
+                    </button>
+                  ))}
+                </div>
+                <Button onClick={handleStep4}>Создать тренировку</Button>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-1" style={{ color: "var(--color-apple-text)" }}>
+                  <span className="font-semibold">Уровень: {s4Data.level}</span>
+                  <span className="text-sm">⏱ {s4Data.duration}</span>
+                </div>
+                <div className="space-y-2">
+                  {s4Data.exercises.map((ex, i) => (
+                    <Card key={i} className="py-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="font-medium" style={{ color: "var(--color-apple-text)" }}>{ex.name}</span>
+                        <span className="font-semibold shrink-0" style={{ color: "var(--color-apple-blue)" }}>{ex.reps}</span>
+                      </div>
+                      <p className="text-xs mt-1" style={{ color: "var(--color-apple-text-secondary)" }}>{ex.notes}</p>
+                    </Card>
+                  ))}
+                </div>
+                <Button variant="secondary" onClick={() => setS4Data(null)}>Сменить уровень</Button>
+              </div>
+            )}
+          </>
         )}
 
-        {/* STEP 5 */}
         {view === "step5" && (
           <div className="space-y-4">
             {!s5Data ? (
               <Card className="text-center py-8">
-                <p className="text-slate-600 mb-4">Получаем медицинские советы...</p>
+                <p className="mb-4" style={{ color: "var(--color-apple-text-secondary)" }}>Медицинские советы по восстановлению</p>
                 <Button onClick={handleStep5}>Загрузить советы</Button>
               </Card>
             ) : (
               <>
-                 <Card className="bg-blue-50 border-blue-100">
-                    <h3 className="font-bold text-blue-800 mb-2">💧 Пьем</h3>
-                    <ul className="list-disc pl-4 text-sm text-slate-700 space-y-1">
-                      {s5Data.hydration.map((t, i) => <li key={i}>{t}</li>)}
-                    </ul>
-                 </Card>
-                 <Card className="bg-green-50 border-green-100">
-                    <h3 className="font-bold text-green-800 mb-2">🍎 Едим</h3>
-                    <ul className="list-disc pl-4 text-sm text-slate-700 space-y-1">
-                      {s5Data.nutrition.map((t, i) => <li key={i}>{t}</li>)}
-                    </ul>
-                 </Card>
-                 <div className="text-center text-sm text-slate-400 mt-4">
-                   Восстановление займет: {s5Data.duration}
-                 </div>
+                <Card style={{ background: "rgba(0,113,227,0.08)", borderColor: "rgba(0,113,227,0.2)" }}>
+                  <h3 className="font-semibold mb-2" style={{ color: "var(--color-apple-blue)" }}>💧 Пьём</h3>
+                  <ul className="list-disc pl-4 text-sm space-y-1" style={{ color: "var(--color-apple-text-secondary)" }}>
+                    {s5Data.hydration.map((t, i) => <li key={i}>{t}</li>)}
+                  </ul>
+                </Card>
+                <Card style={{ background: "rgba(52,199,89,0.08)", borderColor: "rgba(52,199,89,0.2)" }}>
+                  <h3 className="font-semibold mb-2" style={{ color: "var(--color-apple-green)" }}>🍎 Едим</h3>
+                  <ul className="list-disc pl-4 text-sm space-y-1" style={{ color: "var(--color-apple-text-secondary)" }}>
+                    {s5Data.nutrition.map((t, i) => <li key={i}>{t}</li>)}
+                  </ul>
+                </Card>
+                <p className="text-center text-sm mt-4" style={{ color: "var(--color-apple-text-tertiary)" }}>
+                  Восстановление займёт: {s5Data.duration}
+                </p>
               </>
             )}
           </div>
