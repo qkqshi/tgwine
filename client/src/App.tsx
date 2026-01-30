@@ -17,6 +17,56 @@ interface HangoverTips { hydration: string[]; nutrition: string[]; supplements: 
 
 type ViewState = "welcome" | "disclaimer" | "menu" | "step1" | "step2" | "step3" | "step4" | "step5";
 
+// UI-компоненты вынесены из App, чтобы при каждом вводе в инпут не пересоздавались и не сбрасывали фокус
+function Card({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  return (
+    <div className={`apple-card p-5 ${className}`} style={style}>
+      {children}
+    </div>
+  );
+}
+
+function Button({
+  onClick,
+  disabled,
+  loading,
+  children,
+  variant = "primary",
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  children: React.ReactNode;
+  variant?: "primary" | "secondary";
+}) {
+  const isPrimary = variant === "primary";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`w-full flex items-center justify-center gap-2 ${isPrimary ? "apple-btn-primary" : "apple-btn-secondary"}`}
+    >
+      {loading ? <Loader2 className="animate-spin" size={20} /> : children}
+    </button>
+  );
+}
+
+function FileUploader({ onChange, label }: { onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; label: string }) {
+  return (
+    <label
+      className="flex flex-col items-center justify-center w-full min-h-[140px] rounded-[var(--radius-apple-lg)] cursor-pointer transition-colors border-2 border-dashed"
+      style={{ borderColor: "var(--color-apple-separator-strong)", background: "var(--color-apple-fill)" }}
+    >
+      <div className="flex flex-col items-center justify-center py-6 px-4">
+        <Camera size={28} style={{ color: "var(--color-apple-text-tertiary)" }} className="mb-2" />
+        <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>{label}</p>
+      </div>
+      <input type="file" className="hidden" accept="image/*" onChange={onChange} />
+    </label>
+  );
+}
+
 export default function App() {
   // Telegram WebApp Integration (Mock for local dev)
   const tg = (window as any).Telegram?.WebApp;
@@ -135,40 +185,6 @@ export default function App() {
     finally { setLoading(false); }
   };
 
-  // --- UI Components (Apple-style) ---
-  const Card = ({ children, className = "" }: any) => (
-    <div className={`apple-card p-5 ${className}`}>
-      {children}
-    </div>
-  );
-
-  const Button = ({ onClick, disabled, children, variant = "primary" }: any) => {
-    const isPrimary = variant === "primary";
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled || loading}
-        className={`w-full flex items-center justify-center gap-2 ${isPrimary ? "apple-btn-primary" : "apple-btn-secondary"}`}
-      >
-        {loading ? <Loader2 className="animate-spin" size={20} /> : children}
-      </button>
-    );
-  };
-
-  const FileUploader = ({ onChange, label }: any) => (
-    <label
-      className="flex flex-col items-center justify-center w-full min-h-[140px] rounded-[var(--radius-apple-lg)] cursor-pointer transition-colors border-2 border-dashed"
-      style={{ borderColor: "var(--color-apple-separator-strong)", background: "var(--color-apple-fill)" }}
-    >
-      <div className="flex flex-col items-center justify-center py-6 px-4">
-        <Camera size={28} style={{ color: "var(--color-apple-text-tertiary)" }} className="mb-2" />
-        <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>{label}</p>
-      </div>
-      <input type="file" className="hidden" accept="image/*" onChange={onChange} />
-    </label>
-  );
-
   // --- Render Views ---
 
   if (view === "welcome") {
@@ -185,7 +201,7 @@ export default function App() {
           Ваш персональный гид в мире напитков. Подбор вина, рецепты коктейлей и восстановление.
         </p>
         <div className="w-full max-w-[280px]">
-          <Button onClick={() => setView("disclaimer")}>Начать</Button>
+          <Button loading={loading} onClick={() => setView("disclaimer")}>Начать</Button>
         </div>
       </div>
     );
@@ -199,8 +215,8 @@ export default function App() {
           <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>Мы обязаны спросить. Контент 18+</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="secondary" onClick={() => alert("Доступ запрещен")}>Нет</Button>
-          <Button onClick={() => setView("menu")}>Да, мне 18+</Button>
+          <Button loading={loading} variant="secondary" onClick={() => alert("Доступ запрещен")}>Нет</Button>
+          <Button loading={loading} onClick={() => setView("menu")}>Да, мне 18+</Button>
         </div>
       </div>
     );
@@ -333,7 +349,7 @@ export default function App() {
                 </div>
 
                 {s1SelectedDish && !s1Recipe && (
-                  <Button onClick={handleGetRecipe}>Получить рецепт</Button>
+                  <Button loading={loading} onClick={handleGetRecipe}>Получить рецепт</Button>
                 )}
 
                 {s1Recipe && (
@@ -377,7 +393,7 @@ export default function App() {
                       onChange={(e) => setS2Form({ ...s2Form, notes: e.target.value })}
                     />
                   </div>
-                  <Button onClick={handleStep2} disabled={!s2Form.type || !s2Form.notes}>Подобрать</Button>
+                  <Button loading={loading} onClick={handleStep2} disabled={!s2Form.type || !s2Form.notes}>Подобрать</Button>
                 </div>
               </Card>
             ) : (
@@ -396,7 +412,7 @@ export default function App() {
                     </div>
                   </Card>
                 ))}
-                <Button variant="secondary" onClick={() => setS2Recs([])}>Искать снова</Button>
+                <Button loading={loading} variant="secondary" onClick={() => setS2Recs([])}>Искать снова</Button>
               </div>
             )}
           </>
@@ -428,7 +444,7 @@ export default function App() {
                     <p className="text-sm" style={{ color: "var(--color-apple-text-secondary)" }}>{wine.why}</p>
                   </Card>
                 ))}
-                <Button variant="secondary" onClick={() => setS3Data(null)}>Другое фото</Button>
+                <Button loading={loading} variant="secondary" onClick={() => setS3Data(null)}>Другое фото</Button>
               </div>
             )}
           </>
@@ -460,7 +476,7 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <Button onClick={handleStep4}>Создать тренировку</Button>
+                <Button loading={loading} onClick={handleStep4}>Создать тренировку</Button>
               </Card>
             ) : (
               <div className="space-y-4">
@@ -479,7 +495,7 @@ export default function App() {
                     </Card>
                   ))}
                 </div>
-                <Button variant="secondary" onClick={() => setS4Data(null)}>Сменить уровень</Button>
+                <Button loading={loading} variant="secondary" onClick={() => setS4Data(null)}>Сменить уровень</Button>
               </div>
             )}
           </>
@@ -490,7 +506,7 @@ export default function App() {
             {!s5Data ? (
               <Card className="text-center py-8">
                 <p className="mb-4" style={{ color: "var(--color-apple-text-secondary)" }}>Медицинские советы по восстановлению</p>
-                <Button onClick={handleStep5}>Загрузить советы</Button>
+                <Button loading={loading} onClick={handleStep5}>Загрузить советы</Button>
               </Card>
             ) : (
               <>
